@@ -28,7 +28,7 @@ describe("depsToModel", () => {
     ];
 
     const { nodes, links } = depsToModel(deps);
-    expect(nodes.sort(idAsc)).toEqual<Node[]>([
+    expect(nodes.sort(idAsc)).toMatchObject<Node[]>([
       {
         id: "lib",
         name: "lib",
@@ -54,7 +54,7 @@ describe("depsToModel", () => {
       },
     ]);
 
-    expect(links.sort(idAsc)).toEqual<Link[]>([
+    expect(links.sort(idAsc)).toMatchObject<Partial<Link>[]>([
       { id: "lib-main", source: "main", target: "lib", direction: "either" },
       {
         id: "lib.a-lib.b",
@@ -119,7 +119,7 @@ describe("depsToModel", () => {
       { id: "a.b", imports: ["x.y"] },
       { id: "x.y", imports: ["a.b"] },
     ]);
-    expect(links.sort(idAsc)).toEqual<Link[]>(
+    expect(links.sort(idAsc)).toMatchObject<Link[]>(
       assertAs<Link[]>([
         bothLink("a.b", "x.y"),
         bothLink("a.b", "x  "),
@@ -134,7 +134,7 @@ describe("depsToModel", () => {
       { id: "a.b.c", imports: ["x.y.z"] },
       { id: "x.y.z", imports: ["a.b.c"] },
     ]);
-    expect(links.sort(idAsc)).toEqual<Link[]>(
+    expect(links.sort(idAsc)).toMatchObject<Link[]>(
       assertAs<Link[]>([
         bothLink("a.b.c", "x.y.z"),
         bothLink("a.b  ", "x.y.z"),
@@ -155,7 +155,7 @@ describe("depsToModel", () => {
       { id: "a.b2", imports: [] },
       { id: "x", imports: [] },
     ]);
-    expect(links.sort(idAsc)).toEqual<Link[]>(
+    expect(links.sort(idAsc)).toMatchObject<Link[]>(
       assertAs<Link[]>([
         eitherLink("a.b1", "x"),
         eitherLink("a.b1", "a.b2"),
