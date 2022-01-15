@@ -1,5 +1,9 @@
 {
-  "name": "deps-bubble",
+  "name": "@flagellin/depocon",
+  "author": "Yosuke Asano",
+  "version": "0.1.0",
+  "main": "dist/depocon.js",
+  "types": "dist/depocon.d.ts",
   "scripts": {
     "start": "node --require esbuild-register start.ts",
     "build": "rimraf dist && npm run build:js && npm run build:types",
@@ -8,8 +12,8 @@
     "jest:watch": "jest --watch",
     "prettier:check": "prettier -c src test example"
   },
+  "license": "ISC",
   "dependencies": {
-    "@popperjs/core": "^2.11.2",
     "d3": "^7.2.1",
     "d3-force": "^3.0.0",
     "lodash": "^4.17.21"
