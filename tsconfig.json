@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "module": "commonjs",
+    "target": "esnext"
+  },
+  "files": [
+    "src/depocon.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "example",
+    "test"
+  ]
+}
