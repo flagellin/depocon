@@ -5,7 +5,8 @@
     "build": "rimraf dist && npm run build:js && npm run build:types",
     "build:js": "esbuild src/depocon.ts --outdir=dist --bundle --minify ",
     "build:types": "tsc --emitDeclarationOnly --outDir dist",
-    "jest:watch": "jest --watch"
+    "jest:watch": "jest --watch",
+    "prettier:check": "prettier -c src test example"
   },
   "dependencies": {
     "@popperjs/core": "^2.11.2",
