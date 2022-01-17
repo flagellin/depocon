@@ -8,11 +8,10 @@ const idAsc = <T extends { id: string }>(a: T, b: T) => (a.id > b.id ? 1 : -1);
 
 describe("depsToModel", () => {
   test("splitId", () => {
-    expect(splitId("a.b.c")).toEqual(["a", "a.b", "a.b.c"]);
+    expect(splitId("a.b.c", ".")).toEqual(["a", "a.b", "a.b.c"]);
   });
 
-  test("Normal", () => {
-    const deps: Dep[] = [
+  const normalDeps = [
       {
         id: "main",
         imports: ["lib.a", "lib.b"],
@@ -25,10 +24,8 @@ describe("depsToModel", () => {
         id: "lib.b",
         imports: ["lib.a"],
       },
-    ];
-
-    const { nodes, links } = depsToModel(deps);
-    expect(nodes.sort(idAsc)).toMatchObject<Node[]>([
+    ],
+    normalMatchObjectOfNodes: Node[] = [
       {
         id: "lib",
         name: "lib",
@@ -52,9 +49,8 @@ describe("depsToModel", () => {
         name: "main",
         type: "plain",
       },
-    ]);
-
-    expect(links.sort(idAsc)).toMatchObject<Partial<Link>[]>([
+    ],
+    normalMatchObjectOfLinks: Partial<Link>[] = [
       { id: "lib-main", source: "main", target: "lib", direction: "either" },
       {
         id: "lib.a-lib.b",
@@ -74,7 +70,44 @@ describe("depsToModel", () => {
         target: "lib.b",
         direction: "either",
       },
-    ]);
+    ];
+  test("Normal", () => {
+    const { nodes, links } = depsToModel(normalDeps);
+    expect(nodes.sort(idAsc)).toMatchObject<Node[]>(normalMatchObjectOfNodes);
+    expect(links.sort(idAsc)).toMatchObject<Partial<Link>[]>(
+      normalMatchObjectOfLinks
+    );
+  });
+
+  test("Normal with separator=/", () => {
+    const dotToSlash = (v: string) => v.split(".").join("/");
+
+    const { nodes, links } = depsToModel(
+      normalDeps.map((v) => ({
+        id: dotToSlash(v.id),
+        imports: v.imports.map(dotToSlash),
+      })),
+      "/"
+    );
+    expect(nodes.sort(idAsc)).toMatchObject<Node[]>(
+      normalMatchObjectOfNodes.map((v) =>
+        v.children
+          ? {
+              ...v,
+              id: dotToSlash(v.id),
+              children: v.children.map(dotToSlash),
+            }
+          : { ...v, id: dotToSlash(v.id) }
+      )
+    );
+    expect(links.sort(idAsc)).toMatchObject<Partial<Link>[]>(
+      normalMatchObjectOfLinks.map((v) => ({
+        ...v,
+        id: dotToSlash(v.id),
+        source: dotToSlash(v.source),
+        target: dotToSlash(v.target),
+      }))
+    );
   });
 
   test("Like __init__.py deps", () => {

@@ -196,12 +196,20 @@ export function depsToModel(
 
   links.forEach(({ source, target, direction }) => {
     if (direction === "both") {
-      const commonNodeId = zip(source.split(separator), target.split(separator))
-        .filter(([s, t]) => s === t)
-        .map(([s]) => s)
-        .join(separator);
+      const commonParents: string[] = [];
+      for (const [src, tgt] of zip(
+        source.split(separator),
+        target.split(separator)
+      )) {
+        if (src === tgt) commonParents.push(src);
+        else break;
+      }
+      const commonNodeId = commonParents.join(separator);
       if (commonNodeId) {
         const node = nodeMap.get(commonNodeId);
+        if (!node) {
+          console.log({ source, target, commonNodeId });
+        }
         node.includeBothDirection = true;
       }
     }
