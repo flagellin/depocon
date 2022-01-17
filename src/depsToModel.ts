@@ -27,12 +27,10 @@ export type Link = {
   origins: Origin[];
 };
 
-const separator = ".";
-
 /*
   Convert 'a.b.c' to ['a', 'a.b', 'a.b.c']
  */
-export function splitId(id: string) {
+export function splitId(id: string, separator: string) {
   return id
     .split(separator)
     .map((v, i, arr) => arr.slice(0, i + 1).join(separator));
@@ -40,11 +38,12 @@ export function splitId(id: string) {
 
 function walkDeps(
   deps: Dep[],
-  callback: (dep: Dep, node: Node, parentNode?: Node | null) => void
+  callback: (dep: Dep, node: Node, parentNode?: Node | null) => void,
+  separator: string
 ) {
   deps.forEach((dep) => {
     let parent: null | Node = null;
-    const groupIds = splitId(dep.id);
+    const groupIds = splitId(dep.id, separator);
     groupIds.forEach((groupId, index, { length }) => {
       const group: Node = {
         id: groupId,
@@ -65,22 +64,27 @@ function walkDeps(
   });
 }
 
-function depsToNodes(deps: Dep[]): Node[] {
+function depsToNodes(deps: Dep[], separator: string): Node[] {
   const nodeMap = new Map<string, Node>();
 
-  walkDeps(deps, (dep, node, parent) => {
-    if (!nodeMap.has(node.id)) nodeMap.set(node.id, node);
+  walkDeps(
+    deps,
+    (dep, node, parent) => {
+      if (!nodeMap.has(node.id)) nodeMap.set(node.id, node);
 
-    if (parent) {
-      const parentNode =
-        nodeMap.get(parent.id) || nodeMap.set(parent.id, parent).get(parent.id);
-      if (parentNode.type === "plain") {
-        parentNode.type = "group";
-        parentNode.children = [];
+      if (parent) {
+        const parentNode =
+          nodeMap.get(parent.id) ||
+          nodeMap.set(parent.id, parent).get(parent.id);
+        if (parentNode.type === "plain") {
+          parentNode.type = "group";
+          parentNode.children = [];
+        }
+        parentNode.children.push(node.id);
       }
-      parentNode.children.push(node.id);
-    }
-  });
+    },
+    separator
+  );
 
   return [...nodeMap.values()].map((node) =>
     node.children
@@ -134,29 +138,33 @@ class LinkMap extends Map<string, Link> {
   }
 }
 
-function depsToLinks(deps: Dep[], nodes: Node[]): Link[] {
+function depsToLinks(deps: Dep[], nodes: Node[], separator: string): Link[] {
   const linkMap: LinkMap = new LinkMap();
 
-  walkDeps(deps, (dep) => {
-    const sources = splitId(dep.id);
+  walkDeps(
+    deps,
+    (dep) => {
+      const sources = splitId(dep.id, separator);
 
-    dep.imports?.forEach((targetId) => {
-      const targets = splitId(targetId);
-      targets.forEach((target) => {
-        sources.forEach((source) => {
-          if (source.includes(target) || target.includes(source)) return;
-          const linkId = nodeIdsToLinkId(source, target);
-          linkMap.setOrMerge(linkId, {
-            id: linkId,
-            source,
-            target,
-            direction: "either",
-            origins: [{ sourceId: dep.id, targetId }],
+      dep.imports?.forEach((targetId) => {
+        const targets = splitId(targetId, separator);
+        targets.forEach((target) => {
+          sources.forEach((source) => {
+            if (source.includes(target) || target.includes(source)) return;
+            const linkId = nodeIdsToLinkId(source, target);
+            linkMap.setOrMerge(linkId, {
+              id: linkId,
+              source,
+              target,
+              direction: "either",
+              origins: [{ sourceId: dep.id, targetId }],
+            });
           });
         });
       });
-    });
-  });
+    },
+    separator
+  );
 
   return [...linkMap.values()];
 }
@@ -174,12 +182,15 @@ function walkNode(
   });
 }
 
-export function depsToModel(deps: Dep[]): {
+export function depsToModel(
+  deps: Dep[],
+  separator: string = "."
+): {
   nodes: Node[];
   links: Link[];
 } {
-  const nodes: Node[] = depsToNodes(deps),
-    links: Link[] = depsToLinks(deps, nodes);
+  const nodes: Node[] = depsToNodes(deps, separator),
+    links: Link[] = depsToLinks(deps, nodes, separator);
 
   const nodeMap = new Map(nodes.map((n) => [n.id, n]));
 
