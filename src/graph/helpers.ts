@@ -3,7 +3,7 @@ import { Selection } from "d3";
 import { particleRadiusUnit } from "./particleVariables";
 
 export function particleId(p: Particle) {
-  return `particle-${p.id}`.split(".").join("-");
+  return `particle-${p.id}`.split(".").join("-").split("/").join("-");
 }
 
 export type RootSelection = Selection<

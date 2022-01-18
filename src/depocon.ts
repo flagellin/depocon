@@ -74,8 +74,8 @@ function* createRunner({
   }
 }
 
-export function Depocon(deps: Deps) {
-  const { links, nodes } = depsToModel(deps);
+export function Depocon(deps: Deps, separator: string = ".") {
+  const { links, nodes } = depsToModel(deps, separator);
   const svg = createSvg();
 
   const runner = createRunner({ svg, nodes, links });
