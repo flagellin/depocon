@@ -182,6 +182,8 @@ function walkNode(
   });
 }
 
+export const idExp = /^[a-zA-Z0-9_\-/.]+$/;
+
 export function depsToModel(
   deps: Dep[],
   separator: string = "."
@@ -189,6 +191,27 @@ export function depsToModel(
   nodes: Node[];
   links: Link[];
 } {
+  if (new Set(deps.map((v) => v.id)).size !== deps.length) {
+    throw new Error("Found duplicated id in deps.");
+  }
+
+  if (
+    deps.some(({ id, imports }) => {
+      if (!idExp.test(id)) {
+        console.error(`"${id}" is not allowed in id`);
+        return true;
+      }
+      return imports?.some((imp) => {
+        if (!idExp.test(imp)) {
+          console.error(`"${id}" is not allowed in imports`);
+          return true;
+        }
+      });
+    })
+  ) {
+    throw new Error(`Found invalid id`);
+  }
+
   const nodes: Node[] = depsToNodes(deps, separator),
     links: Link[] = depsToLinks(deps, nodes, separator);
 
