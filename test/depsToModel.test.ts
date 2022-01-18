@@ -1,4 +1,11 @@
-import { Dep, depsToModel, Link, Node, splitId } from "../src/depsToModel";
+import {
+  Dep,
+  depsToModel,
+  idExp,
+  Link,
+  Node,
+  splitId,
+} from "../src/depsToModel";
 import { nodeIdsToLinkId } from "../src/nodeIdsToLinkId";
 
 function assertAs<T>(v): T {
@@ -195,5 +202,13 @@ describe("depsToModel", () => {
         eitherLink("a", "x"),
       ]).sort(idAsc)
     );
+  });
+
+  test("Id expression", () => {
+    expect(idExp.test("test-fuga")).toBe(true);
+    expect(idExp.test("test_fuga")).toBe(true);
+    expect(idExp.test("test/fuga")).toBe(true);
+    expect(idExp.test("test.fuga")).toBe(true);
+    expect(idExp.test("test fuga")).toBe(false);
   });
 });
