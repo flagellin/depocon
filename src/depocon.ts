@@ -74,6 +74,15 @@ function* createRunner({
   }
 }
 
+function applySuccessStyle(style: CSSStyleDeclaration) {
+  style.border = "1px solid green";
+  style.backgroundColor = "#EEf7EE";
+}
+function applyErrorStyle(style: CSSStyleDeclaration) {
+  style.border = "1px solid red";
+  style.backgroundColor = "#f7EEEE";
+}
+
 export function Depocon(deps: Deps, separator: string = ".") {
   const { links, nodes } = depsToModel(deps, separator);
   const svg = createSvg();
@@ -94,18 +103,18 @@ export function Depocon(deps: Deps, separator: string = ".") {
     style.fontSize = "12px";
     style.overflow = "auto";
     style.display = "none";
-    style.border = "1px solid red";
-    style.backgroundColor = "#f7EEEE";
     style.padding = "10px";
   }
 
   svg.on("click", (e: MouseEvent) => {
     const el: Element = e.target as never;
-    if (
-      el.classList.contains("fiber") &&
-      el.classList.contains("both-direction")
-    ) {
+    if (el.classList.contains("fiber")) {
       tooltip.style.display = "block";
+      if (el.classList.contains("both-direction")) {
+        applyErrorStyle(tooltip.style);
+      } else {
+        applySuccessStyle(tooltip.style);
+      }
       tooltip.textContent =
         el.attributes.getNamedItem("data-message").textContent || "";
     } else if (el.classList.contains("field-title")) {
@@ -116,7 +125,7 @@ export function Depocon(deps: Deps, separator: string = ".") {
     } else {
       tooltip.style.display = "none";
     }
-  }),
-    container.append(svg.node(), tooltip);
+  });
+  container.append(svg.node(), tooltip);
   return container;
 }

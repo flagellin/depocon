@@ -15,19 +15,25 @@ function applyStyle(selection: Selection<any, Fiber, any, any>) {
   path
     .filter((f) => f.direction === "both")
     .attr("class", "fiber both-direction")
+    .attr("marker-end", "url(#arrowhead-both)")
+    .attr("marker-start", "url(#arrowhead-both)");
+
+  path
     .attr("data-message", (f) => {
       const maxLength = Math.max(...f.origins.map((o) => o.sourceId.length));
       const space = new Array(maxLength).fill(" ").join("");
       return `
-# ${f.source.id} and ${f.target.id} depend each other!
+# ${
+        f.direction === "both"
+          ? `${f.source.id} and ${f.target.id} depend each other!`
+          : `${f.source.id} depends on ${f.target.id}`
+      }
 ----------------------------------------------
 ${f.origins
   .map((o) => `${o.sourceId + space.slice(o.sourceId.length)} -> ${o.targetId}`)
   .join("\n")}
 `.trim();
     })
-    .attr("marker-end", "url(#arrowhead-both)")
-    .attr("marker-start", "url(#arrowhead-both)")
     .style("cursor", "pointer");
 }
 
